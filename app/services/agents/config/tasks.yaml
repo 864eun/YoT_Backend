@@ -1,0 +1,10 @@
+yoga_posotion_recommendation_task:
+  description: >
+    - TextToSpeechTool()을 사용하여 입력된 텍스트를 mp3형태로 변환합니다.
+    - 단, 입력된 텍스트 뒤에 추가로 "10초간 유지합니다. 하나 둘 셋 넷 다섯 여섯 일곱 여덜 아홉 열" 이라는 문자열이 추가 텍스트로 전달되게 한다. 
+    - 즉, 입력된 텍스트와 추가 10초 안내 텍스트가 함께 하나의 mp3로 생성된다. 
+    - TextToSpeechTool()로 생성된 mp3의 path를 MixMp3Tool()의 매개변수로 전달합니다. 
+    - MixMp3Tool()를 사용하여 TextToSpeechTool()로 생성된 mp3와 배경 음악 mp3를 합쳐 하나의 mp3로 만듭니다. 
+  expected_output: >
+    TextToSpeechTool()로 생성된 mp3와 배경 음악 mp3를 합쳐진 하나의 mp3
+  agent: yoga_expert
