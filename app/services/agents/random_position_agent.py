@@ -12,8 +12,6 @@ from typing import Optional
 from pydub import AudioSegment
 
 
-
-
 load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0.7, openai_api_key=OPENAI_API_KEY)
