@@ -72,3 +72,6 @@ dist/
 
 # Local settings
 local_settings.py
+
+#firebase
+yot-firebase-firebase-adminsdk-fbsvc-5adc144e23.json

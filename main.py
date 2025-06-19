@@ -1,35 +1,23 @@
-from fastapi import FastAPI, Depends
-from sqlalchemy.orm import Session
+# app/main.py
+import app.firebase_admin_init
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware  
+from app.api import user_api
 from app.models import models
-from app.schemas import schemas
-from app.database.database import SessionLocal, engine
-from datetime import datetime
+from app.database.database import engine
+
 
 models.Base.metadata.create_all(bind=engine)
+
 app = FastAPI()
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+# CORS 미들웨어 추가
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],  # 프론트엔드 주소 (포트까지 정확히)
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
-
-@app.post("/user/")
-def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
-    db_user = models.User(
-        id=user.id,
-        display_name=user.display_name,
-        email=user.email,
-        email_verified=user.email_verified,
-        provider_id=user.provider_id,
-        creation_time=user.creation_time
-    )
-    db.add(db_user)
-    db.commit()
-    db.refresh(db_user)
-    return {"success": True, "user": db_user.id}
+app.include_router(user_api.router)
