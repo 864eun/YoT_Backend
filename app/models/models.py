@@ -3,7 +3,7 @@ from app.database.database import Base
 
 class User(Base):
     __tablename__ = "user"
-    id = Column(String(255), primary_key=True, index=True)
+    user_id = Column(String(255), primary_key=True, index=True)
     display_name = Column(String(255))
     email = Column(String(255), unique=True, index=True)
     email_verified = Column(Boolean)

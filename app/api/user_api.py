@@ -30,7 +30,7 @@ def create_user(user_data=Depends(verify_token), db: Session = Depends(get_db)):
     db_user = db.query(models.User).filter(models.User.id == user_id).first()
     if not db_user:
         db_user = models.User(
-            id=user_id,
+            user_id=user_id,
             display_name=display_name,
             email=email,
             email_verified=email_verified,
@@ -43,42 +43,3 @@ def create_user(user_data=Depends(verify_token), db: Session = Depends(get_db)):
     return {"success": True, "user": user_id}
 
 
-
-# app/api/user_api.py
-# from fastapi import APIRouter, Depends, HTTPException
-# from sqlalchemy.orm import Session
-# from app.models import models
-# from app.schemas import schemas
-# from app.database.database import SessionLocal
-# from sqlalchemy.exc import IntegrityError
-
-# router = APIRouter()
-
-# def get_db():
-#     db = SessionLocal()
-#     try:
-#         yield db
-#     finally:
-#         db.close()
-
-# @router.post("/user/")
-# def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
-#     # 중복 체크
-#     if db.query(models.User).filter(models.User.id == user.id).first():
-#         raise HTTPException(status_code=409, detail="User already exists")
-#     db_user = models.User(
-#         id=user.id,
-#         display_name=user.display_name,
-#         email=user.email,
-#         email_verified=user.email_verified,
-#         provider_id=user.provider_id,
-#         creation_time=user.creation_time
-#     )
-#     try:
-#         db.add(db_user)
-#         db.commit()
-#         db.refresh(db_user)
-#         return {"success": True, "user": db_user.id}
-#     except IntegrityError:
-#         db.rollback()
-#         raise HTTPException(status_code=409, detail="Duplicate entry")
