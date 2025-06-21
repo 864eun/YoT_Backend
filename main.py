@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api import user_api
 from app.models import models
 from app.database.database import engine
-
+from app.routers import pose_router
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -21,3 +21,5 @@ app.add_middleware(
 )
 
 app.include_router(user_api.router)
+
+app.include_router(pose_router.router)

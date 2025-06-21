@@ -9,3 +9,16 @@ class UserCreate(BaseModel):
     email_verified: Optional[bool] = None
     provider_id: Optional[str] = None
     creation_time: Optional[datetime] = None
+
+
+
+#pose 응답 스키마
+class PoseResponse(BaseModel):
+    pose_id: str
+    pose_name_kr: str
+    pose_name_en: str
+    level: str
+    image_url: str
+
+    class Config:
+        orm_mode = True
