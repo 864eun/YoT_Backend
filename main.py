@@ -2,12 +2,11 @@
 import app.firebase_admin_init
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware  
-from app.api import user_api
-from app.models import models
-from app.database.database import engine
+from app.routers import user_router
+from app.database.database import engine, Base
 from app.routers import pose_router
 
-models.Base.metadata.create_all(bind=engine)
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
@@ -20,6 +19,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(user_api.router)
+app.include_router(user_router.router)
 
 app.include_router(pose_router.router)

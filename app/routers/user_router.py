@@ -1,7 +1,6 @@
-# app/api/user_api.py
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from app.models import models
+from app.models.user_model import User
 from app.database.database import SessionLocal
 from app.utils.firebase_auth import verify_token
 
@@ -27,9 +26,9 @@ def create_user(user_data=Depends(verify_token), db: Session = Depends(get_db)):
         from datetime import datetime
         creation_time = datetime.fromtimestamp(creation_time)# 필요시 변환
 
-    db_user = db.query(models.User).filter(models.User.id == user_id).first()
+    db_user = db.query(User).filter(User.id == user_id).first()
     if not db_user:
-        db_user = models.User(
+        db_user = User(
             user_id=user_id,
             display_name=display_name,
             email=email,

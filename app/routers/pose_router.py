@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from app.database.database import get_db
 from app.services.poses.pose_service import get_all_poses
-from app.schemas.schemas import PoseResponse
+from app.schemas.pose_schema import PoseResponse
 
 router = APIRouter(
     prefix="/poses",
