@@ -2,7 +2,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database.database import get_db
-from app.services.poses.pose_service import (
+from app.services.pose.pose_service import (
     get_all_poses, get_pose_by_id, get_poses_by_level, get_random_pose
 )
 from app.schemas.pose_schema import PoseResponse

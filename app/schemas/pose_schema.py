@@ -4,10 +4,10 @@ from datetime import datetime
 
 class PoseResponse(BaseModel):
     pose_id: str
-    pose_name_kr: str
-    pose_name_en: str
+    name_kr: str
+    name_en: str
     level: str
-    image_url: str
+    url: str
 
     class Config:
         orm_mode = True

@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.routers import user_router
 from app.database.database import engine, Base
 from app.routers import pose_router
+from app.routers import music_router
 
 Base.metadata.create_all(bind=engine)
 
@@ -22,3 +23,5 @@ app.add_middleware(
 app.include_router(user_router.router)
 
 app.include_router(pose_router.router)
+
+app.include_router(music_router.router)
