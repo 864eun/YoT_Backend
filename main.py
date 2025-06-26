@@ -3,7 +3,7 @@ import app.firebase_admin_init
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.database.database import engine, Base
-from app.routers import user_router, pose_router, music_router, pose_voice_router
+from app.routers import user_router, pose_router, music_router, pose_voice_router, guide_voice_router
 
 app = FastAPI()
 
@@ -30,3 +30,4 @@ app.include_router(user_router.router)
 app.include_router(pose_router.router)
 app.include_router(music_router.router)
 app.include_router(pose_voice_router.router)
+app.include_router(guide_voice_router.router)
