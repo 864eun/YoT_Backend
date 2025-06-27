@@ -9,9 +9,23 @@ async def get_all_poses(db: AsyncSession):
     result = await db.execute(select(Pose))
     return result.scalars().all()
 
-async def get_pose_by_id(db: AsyncSession, pose_id: str):
-    result = await db.execute(select(Pose).where(Pose.pose_id == pose_id))
-    return result.scalars().first()
+async def get_pose_by_id(
+    db: AsyncSession, 
+    pose_id: Union[str, List[str]]
+):
+    if isinstance(pose_id, str):
+        result = await db.execute(
+            select(Pose).where(Pose.pose_id == pose_id))
+        return result.scalars().first()
+    elif isinstance(pose_id, list):
+        if not pose_id:
+            return []
+        result = await db.execute(
+            select(Pose).where(Pose.pose_id.in_(pose_id))
+        )
+        return result.scalars().all()
+    else:
+        return None
 
 async def get_poses_by_level(db: AsyncSession, level: str):
     result = await db.execute(select(Pose).where(Pose.level == level))
