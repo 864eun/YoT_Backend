@@ -3,6 +3,7 @@ from sqlalchemy.future import select
 from sqlalchemy import func
 from app.models.pose_model import Pose
 import random
+from typing import Union, List
 
 async def get_all_poses(db: AsyncSession):
     result = await db.execute(select(Pose))

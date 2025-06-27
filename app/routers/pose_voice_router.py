@@ -7,7 +7,7 @@ from typing import List
 
 router = APIRouter(prefix="/pose-voices", tags=["pose-voices"])
 
-@router.get("/", response_model=List[PoseVoiceResponse])
+@router.get("/all", response_model=List[PoseVoiceResponse])
 async def get_pose_voices(db: AsyncSession = Depends(get_db)):
     pose_voices = await get_all_pose_voices(db)
     return pose_voices
@@ -19,9 +19,9 @@ async def get_pose_voice(pose_voice_id: str, db: AsyncSession = Depends(get_db))
         raise HTTPException(status_code=404, detail="Pose voice not found")
     return pose_voice
 
-@router.get("/pose/{pose_id}", response_model=PoseVoiceResponse)
+@router.get("/pose/{pose_id}", response_model=List[PoseVoiceResponse])
 async def get_pose_voice_by_pose(pose_id: str, db: AsyncSession = Depends(get_db)):
-    pose_voice = await get_pose_voice_by_pose_id(db, pose_id)
-    if not pose_voice:
+    pose_voices = await get_pose_voice_by_pose_id(db, pose_id)
+    if not pose_voices:
         raise HTTPException(status_code=404, detail="Pose voice not found")
-    return pose_voice
+    return pose_voices

@@ -7,7 +7,7 @@ from typing import List
 
 router = APIRouter(prefix="/guide-voices", tags=["guide-voices"])
 
-@router.get("/", response_model=List[GuideVoiceResponse])
+@router.get("/all", response_model=List[GuideVoiceResponse])
 async def get_guide_voices(db: AsyncSession = Depends(get_db)):
     guide_voices = await get_all_guide_voices(db)
     return guide_voices
