@@ -1,17 +1,12 @@
-# app/api/video.py
-
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 from pydantic import BaseModel
 from app.database.database import get_db
-
-# create_pose_video 함수 임포트
-from app.services.video.video__test_service import create_pose_video
+from app.services.video.video_test2 import create_pose_video
 
 router = APIRouter(prefix="/api/video", tags=["video"])
 
-# 요청 바디용 Pydantic 모델 정의
 class VideoCreateRequest(BaseModel):
     pose_ids: List[str]
     music_id: str
@@ -30,5 +25,7 @@ async def create_video(
             guide_labels=request.guide_labels
         )
         return {"video_path": video_path}
+    except ValueError as ve:
+        raise HTTPException(status_code=400, detail=str(ve))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
