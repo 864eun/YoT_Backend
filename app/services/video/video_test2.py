@@ -1,4 +1,4 @@
-from moviepy import ImageClip, AudioFileClip
+from moviepy import ImageClip, AudioFileClip, concatenate_videoclips
 from datetime import datetime
 import os
 
@@ -10,44 +10,46 @@ async def create_pose_video(
     music_id: str,
     guide_labels: list
 ):
-    pose_img_url = "s3://yot-static-files/pose/Eagle.png"
+    pose_img_url1 = "s3://yot-static-files/pose/Child's Pose.png"
+    pose_img_url2 = "s3://yot-static-files/pose/Eagle.png"
     bg_music_url = "s3://yot-static-files/background_music/rain_1.mp3"
 
-    pose_img_path = download_s3_to_tempfile(pose_img_url)
+    pose_img_path1 = download_s3_to_tempfile(pose_img_url1)
+    pose_img_path2 = download_s3_to_tempfile(pose_img_url2)
     bg_audio_path = download_s3_to_tempfile(bg_music_url)
 
-    # 오디오 파일 정상 여부 확인
+    temp_files = [pose_img_path1, pose_img_path2, bg_audio_path]
+
+    # 기준 해상도 지정 (예: 첫 번째 이미지 크기)
+    base_clip = ImageClip(pose_img_path1, duration=10)
+    w, h = base_clip.size
+
+    # 두 이미지 모두 같은 해상도로 맞춤
+    pose_img1 = base_clip
+    pose_img2 = ImageClip(pose_img_path2, duration=10).resized((w, h))
+
+    # 오디오 준비
     try:
-        bg_audio = AudioFileClip(bg_audio_path).subclipped(0, 10)
-        print("오디오 길이(초):", bg_audio.duration)
-        print("오디오 채널 수:", bg_audio.nchannels)
-        print("오디오 프레임레이트:", bg_audio.fps)
+        bg_audio = AudioFileClip(bg_audio_path).subclipped(0, 20)
     except Exception as e:
-        print("오디오 파일 로드 오류:", e)
-        cleanup_tempfiles([pose_img_path, bg_audio_path])
+        cleanup_tempfiles(temp_files)
         raise RuntimeError("오디오 파일에 문제가 있습니다.")
 
-    # 이미지 클립 생성 (duration 파라미터로 지정)
-    pose_img = ImageClip(pose_img_path, duration=bg_audio.duration)
-
-    # audio 속성 할당 (moviepy 2.x 이상)
-    pose_img.audio = bg_audio
-    video_with_sound = pose_img
+    # 이어붙이기
+    video_clip = concatenate_videoclips([pose_img1, pose_img2])
+    video_clip.audio = bg_audio
 
     output_dir = "generated_videos"
     os.makedirs(output_dir, exist_ok=True)
     filename = f"test_video_{datetime.now().strftime('%Y%m%d%H%M%S')}.mp4"
     output_path = os.path.join(output_dir, filename)
 
-    # 비디오 파일 생성
-    video_with_sound.write_videofile(
+    video_clip.write_videofile(
         output_path,
         fps=24,
         codec="libx264",
-        audio_codec="aac",
-        logger=None    # 필요시 logger 지정
+        audio_codec="aac"
     )
 
-    cleanup_tempfiles([pose_img_path, bg_audio_path])
-
+    cleanup_tempfiles(temp_files)
     return output_path
