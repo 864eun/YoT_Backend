@@ -10,57 +10,63 @@ async def create_pose_video(
     music_id: str,
     guide_labels: list
 ):
+    # 파일 경로
     pose_img_url1 = "s3://yot-static-files/pose/Child's Pose.png"
     pose_img_url2 = "s3://yot-static-files/pose/Eagle.png"
-    start_voice_url = "s3://yot-static-files/guide_voice/T시작호흡.mp3"
+    voice_url1 = "s3://yot-static-files/pose_voice/T아기자세보이스.mp3"
+    voice_url2 = "s3://yot-static-files/pose_voice/T독수리자세.mp3"
     bg_music_url = "s3://yot-static-files/background_music/rain_1.mp3"
 
+    # S3에서 임시 파일로 다운로드
     pose_img_path1 = download_s3_to_tempfile(pose_img_url1)
     pose_img_path2 = download_s3_to_tempfile(pose_img_url2)
-    start_voice_path = download_s3_to_tempfile(start_voice_url)
+    voice_path1 = download_s3_to_tempfile(voice_url1)
+    voice_path2 = download_s3_to_tempfile(voice_url2)
     bg_audio_path = download_s3_to_tempfile(bg_music_url)
 
-    temp_files = [pose_img_path1, pose_img_path2, start_voice_path, bg_audio_path]
+    temp_files = [pose_img_path1, pose_img_path2, voice_path1, voice_path2, bg_audio_path]
 
     try:
-        start_voice = AudioFileClip(start_voice_path)
+        # 오디오 로드
+        voice1 = AudioFileClip(voice_path1)
+        voice2 = AudioFileClip(voice_path2)
         bg_audio = AudioFileClip(bg_audio_path)
-        print("시작오디오 길이:", start_voice.duration, "채널:", start_voice.nchannels, "fps:", start_voice.fps)
-        print("배경음악 길이:", bg_audio.duration, "채널:", bg_audio.nchannels, "fps:", bg_audio.fps)
-    except Exception as e:
+
+        # 각 이미지에 맞는 길이로 이미지 클립 생성
+        base_clip = ImageClip(pose_img_path1)
+        w, h = base_clip.size
+        pose_img1 = base_clip.resized((w, h)).with_duration(voice1.duration)
+        pose_img2 = ImageClip(pose_img_path2).resized((w, h)).with_duration(voice2.duration)
+
+        # 오디오: 자세 보이스들은 순차적으로 붙이고, 배경음악은 전체 길이만큼 깔림
+        total_duration = voice1.duration + voice2.duration
+
+        # 자세 보이스를 순차적으로 이어붙임 (set_start 사용)
+        voice2 = voice2.with_start(voice1.duration)
+        voices = CompositeAudioClip([voice1, voice2])
+
+        # 배경음악을 전체 길이만큼 자르고, 볼륨 낮추기(필요시)
+        bg_audio = bg_audio.with_volume_scaled(0.2).subclipped(0, total_duration)
+
+        # 두 오디오를 겹침
+        final_audio = CompositeAudioClip([bg_audio, voices])
+
+        # 이미지 비디오를 순차적으로 붙임
+        video_clip = concatenate_videoclips([pose_img1, pose_img2])
+        video_clip = video_clip.with_audio(final_audio)
+
+        # 출력
+        output_dir = "generated_videos"
+        os.makedirs(output_dir, exist_ok=True)
+        filename = f"pose_voice_{datetime.now().strftime('%Y%m%d%H%M%S')}.mp4"
+        output_path = os.path.join(output_dir, filename)
+
+        video_clip.write_videofile(
+            output_path,
+            fps=24,
+            codec="libx264",
+            audio_codec="aac"
+        )
+    finally:
         cleanup_tempfiles(temp_files)
-        print("오디오 파일 로드 오류:", e)
-        raise RuntimeError("오디오 파일에 문제가 있습니다.")
-
-    # 볼륨 조정 (MoviePy 2.x)
-    start_voice = start_voice.with_volume_scaled(2.0)
-
-    # CompositeAudioClip 생성 및 길이 자르기
-    composite_audio = CompositeAudioClip([
-        bg_audio,
-        start_voice.with_start(0)
-    ]).subclipped(0, 20)
-
-    # 이미지 클립 생성 (각 10초)
-    base_clip = ImageClip(pose_img_path1, duration=10)
-    w, h = base_clip.size
-    pose_img1 = base_clip
-    pose_img2 = ImageClip(pose_img_path2, duration=10).resized((w, h))
-
-    video_clip = concatenate_videoclips([pose_img1, pose_img2])
-    video_clip.audio = composite_audio
-
-    output_dir = "generated_videos"
-    os.makedirs(output_dir, exist_ok=True)
-    filename = f"test_voice_and_music_{datetime.now().strftime('%Y%m%d%H%M%S')}.mp4"
-    output_path = os.path.join(output_dir, filename)
-
-    video_clip.write_videofile(
-        output_path,
-        fps=24,
-        codec="libx264",
-        audio_codec="aac"
-    )
-
-    cleanup_tempfiles(temp_files)
     return output_path
